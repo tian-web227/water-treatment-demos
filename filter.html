@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多介质过滤器智能运维中心</title>
+<style>
+:root{--bg:#07111d;--panel:#0d1b2a;--panel2:#112338;--line:#233b52;--text:#e5f0fb;--muted:#8da5bb;--cyan:#50d8f3;--green:#5de0b5;--amber:#ffc96b;--red:#ff7b83}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#183550 0,#07111d 62%);color:var(--text);font:14px/1.45 Inter,"Microsoft YaHei",system-ui,sans-serif}
+header{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;border-bottom:1px solid #203449;background:#091522e8;position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#1bb9d5,#286bc0);font-size:24px}.brand h1{font-size:18px;margin:0}.brand p{font-size:10px;letter-spacing:1.5px;color:var(--muted);margin:3px 0 0}
+.head-right{display:flex;gap:12px;align-items:center}.sys{font-size:12px;color:var(--green);border:1px solid #285d50;background:#102d2a;padding:8px 12px;border-radius:20px}.clock{font-size:12px;color:#9ab0c5}
+main{max-width:1550px;margin:auto;padding:20px;display:grid;gap:15px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.tile,.panel{border:1px solid var(--line);background:linear-gradient(145deg,#102136,#0b1725);border-radius:13px;box-shadow:0 10px 28px #0002}.tile{padding:15px 17px}.tile-label{color:var(--muted);font-size:12px}.tile-value{font-size:24px;font-weight:700;margin:7px 0 4px}.tile-foot{font-size:11px;color:#83a0b9}.green{color:var(--green)}.cyan{color:var(--cyan)}.amber{color:var(--amber)}
+.main-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);gap:15px;align-items:start}.panel{padding:17px;min-width:0}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}.panel-head h2{font-size:15px;margin:0}.sub{font-size:11px;color:var(--muted)}.tag{border-radius:6px;padding:4px 8px;font-size:11px;background:#15334a;color:var(--cyan);border:1px solid #27506a}.tag.green{background:#10332c;border-color:#245b4d;color:var(--green)}.tag.amber{background:#382c18;border-color:#66502a;color:var(--amber)}
+.vessel-wrap{border:1px solid #24425a;border-radius:12px;background:radial-gradient(ellipse at 50% 35%,#173951,#091522 78%);overflow:hidden;position:relative;min-height:305px}
+.vessel-wrap svg{width:100%;height:auto;display:block;max-height:370px}.flow{stroke-dasharray:8 9;animation:flow 1.1s linear infinite}.bubble{animation:rise 2s linear infinite}.bubble:nth-child(2n){animation-delay:-.8s}.pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes flow{to{stroke-dashoffset:-34}}@keyframes rise{0%{transform:translateY(22px);opacity:.2}40%{opacity:1}100%{transform:translateY(-24px);opacity:.1}}@keyframes pulse{50%{opacity:.5}}
+.vessel-caption{position:absolute;left:13px;top:12px;font-size:10px;letter-spacing:1.3px;color:#86a9c3}.vessel-legend{display:flex;gap:13px;flex-wrap:wrap;padding:12px 3px 0;font-size:11px;color:#a9bed1}.key{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.pipe-state{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.statebox{background:#0b1927;border:1px solid #1d3449;border-radius:8px;padding:9px}.statebox small{display:block;color:var(--muted);font-size:10px}.statebox strong{display:block;font-size:12px;margin-top:5px}
+.two-panels{display:grid;grid-template-columns:1fr 1fr;gap:15px}.steps{display:flex;flex-direction:column;gap:8px}.step{display:flex;align-items:center;gap:10px;border:1px solid #21384d;background:#0b1927;padding:10px;border-radius:9px}.step.active{border-color:#2babc7;background:#102c3d}.step.done{border-color:#245647}.num{width:26px;height:26px;border-radius:7px;background:#1b3145;color:#a6bed3;display:grid;place-items:center;font-size:11px;flex-shrink:0}.step.active .num{background:#0b718a;color:white}.step.done .num{background:#155b49;color:#b5f6dc}.step-name{font-size:12px;font-weight:600}.step-desc{font-size:10px;color:var(--muted);margin-top:3px}.step-state{margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}.btn{border:1px solid #2a455d;border-radius:8px;background:#162b40;color:#e3effa;padding:9px 12px;font-size:12px;cursor:pointer}.btn:hover{filter:brightness(1.14)}.btn.primary{background:linear-gradient(135deg,#078caf,#246ec2);border-color:transparent;color:white}.btn.danger{border-color:#74404b;background:#351c27;color:#ffb5b9}.btn:disabled{opacity:.35;cursor:not-allowed}
+.warning{margin-top:12px;border:1px solid #5b492b;background:#2a2418;color:#d9c08f;border-radius:8px;padding:10px;font-size:10px;line-height:1.65}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:11px;color:#a7bbce;margin-bottom:6px}.field input,.field select{width:100%;border:1px solid #2a4359;background:#081522;color:var(--text);border-radius:8px;padding:10px;font-size:12px;outline:none}.field input:focus,.field select:focus{border-color:var(--cyan)}.unit{font-size:10px;color:var(--muted);margin-left:4px}.form-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:14px}.checkline{display:flex;gap:7px;align-items:center;color:#b6c9da;font-size:11px}.checkline input{accent-color:var(--cyan)}
+.readout{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:13px}.readout div{border:1px solid #20374b;background:#0a1826;border-radius:8px;padding:10px}.readout small{font-size:10px;color:var(--muted);display:block}.readout strong{font-size:17px;display:block;margin-top:5px}
+.bottom-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:15px}.table{width:100%;border-collapse:collapse;font-size:11px}.table th{text-align:left;color:#8da6bb;font-weight:500;padding:9px 8px;border-bottom:1px solid #2a4054}.table td{padding:10px 8px;border-bottom:1px solid #1b3043;color:#c4d5e4}.table tr:last-child td{border-bottom:0}.pill{font-size:10px;color:var(--green);background:#103329;padding:4px 7px;border-radius:5px}.log{display:flex;flex-direction:column;gap:10px}.log-item{display:flex;gap:10px;align-items:flex-start;font-size:11px;color:#c4d5e4}.log-time{font-size:10px;color:#7894ad;min-width:66px}.log-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);margin-top:5px;flex-shrink:0}
+footer{max-width:1550px;margin:auto;padding:0 20px 20px;color:#627d95;font-size:10px;display:flex;justify-content:space-between;gap:10px}
+.modal-backdrop{display:none;position:fixed;inset:0;background:#0009;z-index:20;align-items:center;justify-content:center;padding:18px}.modal-backdrop.show{display:flex}.modal{max-width:420px;width:100%;background:#102136;border:1px solid #38516a;border-radius:14px;padding:20px;box-shadow:0 25px 80px #0008}.modal h3{margin:0 0 9px;font-size:16px}.modal p{color:#a9bfd2;font-size:12px;line-height:1.7}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+@media(max-width:1000px){.main-grid,.two-panels,.bottom-grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){header{padding:0 13px}.clock{display:none}main{padding:12px}.summary{gap:8px}.tile{padding:12px}.tile-value{font-size:20px}.panel{padding:13px}.pipe-state{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.readout{grid-template-columns:1fr 1fr 1fr}.brand h1{font-size:15px}.brand p{font-size:8px}footer{padding:0 12px 18px;flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">≋</div><div><h1>多介质过滤器智能运维中心</h1><p>MULTI-MEDIA FILTER · INTELLIGENT O&amp;M</p></div></div>
+  <div class="head-right"><span class="clock" id="clock">2026/10/16 11:34:42</span></div>
+</header>
+<main>
+  <section class="summary">
+    <div class="tile"><div class="tile-label">1# 过滤器 · 控制模式</div><div class="tile-value amber">手动操作</div><div class="tile-foot" id="f1Summary">当前阶段：待机</div></div>
+    <div class="tile"><div class="tile-label">2# 过滤器 · 控制模式</div><div class="tile-value cyan" id="f2ModeSummary">自动控制</div><div class="tile-foot" id="f2Summary">自动策略已配置（演示）</div></div>
+    <div class="tile"><div class="tile-label">1# 过滤器 · 进出口压差</div><div class="tile-value">0.035 <span style="font-size:12px;color:var(--muted)">MPa</span></div><div class="tile-foot">模拟仪表值 · 非现场数据</div></div>
+    <div class="tile"><div class="tile-label">当前告警</div><div class="tile-value green" id="alarmCount">0 条</div><div class="tile-foot" id="alarmDesc">无模拟告警</div></div>
+  </section>
+
+  <section class="main-grid">
+    <div class="panel">
+      <div class="panel-head"><h2>过滤系统工艺总览</h2><span class="tag">动态示意</span></div>
+      <div class="vessel-wrap">
+        <div class="vessel-caption">FILTER PROCESS / SCHEMATIC VIEW</div>
+        <svg viewBox="0 0 650 345" role="img" aria-label="多介质过滤器流程示意图">
+          <defs>
+            <linearGradient id="tankGrad" x1="0" x2="1"><stop offset="0" stop-color="#507b98" stop-opacity=".65"></stop><stop offset=".5" stop-color="#8fc1d6" stop-opacity=".24"></stop><stop offset="1" stop-color="#315c79" stop-opacity=".7"></stop></linearGradient>
+            <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#28c7ed" stop-opacity=".45"></stop><stop offset="1" stop-color="#1674bd" stop-opacity=".18"></stop></linearGradient>
+            <linearGradient id="media1"><stop stop-color="#e7c18b"></stop><stop offset="1" stop-color="#b17c42"></stop></linearGradient>
+            <linearGradient id="media2"><stop stop-color="#687f9c"></stop><stop offset="1" stop-color="#344d68"></stop></linearGradient>
+          </defs>
+          <!-- inlet / outlet piping -->
+          <path d="M42 98 H137 V126" fill="none" stroke="#4bd4f0" stroke-width="7" opacity=".85"></path>
+          <path d="M42 98 H137 V126" fill="none" stroke="#d1f9ff" stroke-width="2.5" class="flow"></path>
+          <path d="M513 127 V98 H600" fill="none" stroke="#54dfb5" stroke-width="7" opacity=".8"></path>
+          <path d="M513 127 V98 H600" fill="none" stroke="#d5fff0" stroke-width="2.5" class="flow"></path>
+          <text x="43" y="81" fill="#7bdff4" font-size="11">进水</text><text x="560" y="81" fill="#67e7bd" font-size="11">出水</text>
+          <!-- vessel 1 -->
+          <g transform="translate(95 54)">
+            <ellipse cx="83" cy="17" rx="62" ry="14" fill="#315b75" stroke="#75a7c1" stroke-width="2"></ellipse>
+            <path d="M21 17 V190 Q21 207 83 211 Q145 207 145 190 V17" fill="url(#tankGrad)" stroke="#79a9c1" stroke-width="2"></path>
+            <ellipse cx="83" cy="190" rx="62" ry="17" fill="#1a354b" stroke="#79a9c1" stroke-width="2"></ellipse>
+            <path d="M24 66 Q83 59 142 66 V185 Q83 203 24 185Z" fill="url(#waterGrad)"></path>
+            <path d="M25 68 Q83 60 141 68" fill="none" stroke="#59d9f3" stroke-width="2"></path>
+            <path d="M26 140 Q83 147 140 140 V183 Q83 200 26 183Z" fill="url(#media1)" opacity=".95"></path>
+            <path d="M26 157 Q83 164 140 157" fill="none" stroke="#f5d5a1" stroke-width="2" opacity=".8"></path>
+            <path d="M26 178 Q83 185 140 178" fill="none" stroke="#e4bd7d" stroke-width="2" opacity=".8"></path>
+            <path d="M36 188 H130" stroke="#d6e7ee" stroke-width="4"></path>
+            <path d="M45 198 H121" stroke="#80b8d1" stroke-width="3"></path>
+            <g fill="#dcf9ff" opacity=".85">
+              <circle class="bubble" cx="54" cy="124" r="3"></circle><circle class="bubble" cx="82" cy="110" r="4"></circle><circle class="bubble" cx="111" cy="128" r="2.8"></circle><circle class="bubble" cx="65" cy="91" r="2.5"></circle>
+            </g>
+            <text x="83" y="238" text-anchor="middle" fill="#d7e9f6" font-size="13" font-weight="600">1# 过滤器</text>
+            <text x="83" y="253" text-anchor="middle" fill="#f2c66d" font-size="10">手动反冲洗</text>
+          </g>
+          <!-- central pipes / valve -->
+          <path d="M240 167 H291 V188 H350 V167 H410" fill="none" stroke="#557a94" stroke-width="8" stroke-linejoin="round"></path>
+          <path d="M240 167 H291 V188 H350 V167 H410" fill="none" stroke="#56d7ef" stroke-width="2.5" class="flow"></path>
+          <g transform="translate(320 188)"><path d="M-12 -11 L0 0 L-12 11Z M12 -11 L0 0 L12 11Z" fill="#e0bb70" stroke="#ffe0a1" stroke-width="1.5"></path><circle r="3" fill="#fff1ca"></circle></g>
+          <text x="320" y="215" text-anchor="middle" fill="#a9bfd1" font-size="10">联络管 / 阀门</text>
+          <!-- vessel 2 -->
+          <g transform="translate(405 54)">
+            <ellipse cx="83" cy="17" rx="62" ry="14" fill="#315b75" stroke="#75a7c1" stroke-width="2"></ellipse>
+            <path d="M21 17 V190 Q21 207 83 211 Q145 207 145 190 V17" fill="url(#tankGrad)" stroke="#79a9c1" stroke-width="2"></path>
+            <ellipse cx="83" cy="190" rx="62" ry="17" fill="#1a354b" stroke="#79a9c1" stroke-width="2"></ellipse>
+            <path d="M24 66 Q83 59 142 66 V185 Q83 203 24 185Z" fill="url(#waterGrad)"></path>
+            <path d="M25 68 Q83 60 141 68" fill="none" stroke="#59d9f3" stroke-width="2"></path>
+            <path d="M26 124 Q83 131 140 124 V146 Q83 158 26 146Z" fill="url(#media2)"></path>
+            <path d="M26 147 Q83 159 140 147 V166 Q83 179 26 166Z" fill="url(#media1)"></path>
+            <path d="M26 168 Q83 180 140 168 V184 Q83 200 26 184Z" fill="#526d83"></path>
+            <path d="M36 188 H130" stroke="#d6e7ee" stroke-width="4"></path>
+            <path d="M45 198 H121" stroke="#80b8d1" stroke-width="3"></path>
+            <path d="M83 37 V62" stroke="#66d9f1" stroke-width="3" class="flow"></path>
+            <text x="83" y="238" text-anchor="middle" fill="#d7e9f6" font-size="13" font-weight="600">2# 过滤器</text>
+            <text x="83" y="253" text-anchor="middle" fill="#58d8f3" font-size="10">自动控制</text>
+          </g>
+          <text x="325" y="306" text-anchor="middle" fill="#7f9bb4" font-size="10">图示仅用于交互说明，管路与阀门逻辑需按现场 P&amp;ID 校准</text>
+        </svg>
+      </div>
+      <div class="vessel-legend"><span><i class="key" style="background:#4bd4f0"></i>进水 / 反洗水</span><span><i class="key" style="background:#54dfb5"></i>出水</span><span><i class="key" style="background:#d8b176"></i>滤料层</span><span><i class="key" style="background:#e4c16e"></i>阀门示意</span></div>
+      <div class="pipe-state">
+        <div class="statebox"><small>1# 进水阀</small><strong id="v1in" class="green">开</strong></div>
+        <div class="statebox"><small>1# 反洗阀</small><strong id="v1wash" class="amber">关</strong></div>
+        <div class="statebox"><small>2# 控制模式</small><strong id="v2mode" class="cyan">自动</strong></div>
+        <div class="statebox"><small>通讯状态</small><strong class="green">本地模拟</strong></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>1# 过滤器 · 手动反冲洗</h2><span class="tag amber" id="manualTag">待机</span></div>
+      <div class="sub" style="margin-bottom:12px">按工艺顺序执行步骤；每一步均需操作人员确认。</div>
+      <div class="steps" id="manualSteps">
+        <div class="step" data-step="0"><div class="num">01</div><div><div class="step-name">停止过滤 / 隔离进水</div><div class="step-desc">确认进水条件与相关阀门状态</div></div><span class="step-state">待执行</span></div>
+        <div class="step" data-step="1"><div class="num">02</div><div><div class="step-name">反洗水冲洗</div><div class="step-desc">按现场规程开启反洗水路</div></div><span class="step-state">待执行</span></div>
+        <div class="step" data-step="2"><div class="num">03</div><div><div class="step-name">气水联合 / 空气擦洗</div><div class="step-desc">仅在设备工艺配置包含该阶段时使用</div></div><span class="step-state">待执行</span></div>
+        <div class="step" data-step="3"><div class="num">04</div><div><div class="step-name">静置 / 沉降</div><div class="step-desc">关闭反洗介质，等待滤料稳定</div></div><span class="step-state">待执行</span></div>
+        <div class="step" data-step="4"><div class="num">05</div><div><div class="step-name">正洗 / 恢复过滤</div><div class="step-desc">确认出水水质及阀门复位条件</div></div><span class="step-state">待执行</span></div>
+      </div>
+      <div class="btns"><button class="btn primary" id="startManual">开始反冲洗流程</button><button class="btn" id="nextStep" disabled="">确认并进入下一步 →</button><button class="btn danger" id="stopManual" disabled="">停止流程</button><button class="btn" id="resetManual">复位</button></div>
+      
+    </div>
+  </section>
+
+  <section class="two-panels">
+    <div class="panel">
+      <div class="panel-head"><h2>2# 过滤器 · 自控参数设置</h2><span class="tag" id="autoTag">参数编辑</span></div>
+      <div class="form-grid">
+        <div class="field"><label for="mode">控制模式</label><select id="mode"><option value="auto">自动控制</option><option value="manual">手动 / 维护</option></select></div>
+        <div class="field"><label for="trigger">反洗触发策略</label><select id="trigger"><option value="dp">进出口压差达到阈值</option><option value="time">运行时间达到设定值</option><option value="either">压差或运行时间任一触发</option></select></div>
+        <div class="field"><label for="dp">反洗压差阈值 <span class="unit">MPa</span></label><input id="dp" type="number" min="0.01" max="0.15" step="0.005" value="0.08"></div>
+        <div class="field"><label for="runHours">过滤运行周期 <span class="unit">小时</span></label><input id="runHours" type="number" min="1" max="168" step="1" value="24"></div>
+        <div class="field"><label for="washTime">反洗持续时间 <span class="unit">分钟</span></label><input id="washTime" type="number" min="1" max="60" step="1" value="8"></div>
+        <div class="field"><label for="settleTime">静置时间 <span class="unit">分钟</span></label><input id="settleTime" type="number" min="0" max="30" step="1" value="3"></div>
+        <div class="field"><label for="rinseTime">正洗时间 <span class="unit">分钟</span></label><input id="rinseTime" type="number" min="1" max="60" step="1" value="5"></div>
+        <div class="field"><label for="flowLimit">反洗流量设定 <span class="unit">m³/h</span></label><input id="flowLimit" type="number" min="1" max="1000" step="1" value="120"></div>
+      </div>
+      <div class="form-foot">
+        <label class="checkline"><input type="checkbox" id="confirmParams"> 我已核对参数与现场工艺要求</label>
+        <div class="btns" style="margin-top:0"><button class="btn" id="validate">校验参数</button><button class="btn primary" id="saveParams">保存至演示配置</button></div>
+      </div>
+      <div id="paramMessage" class="warning" style="display:none"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>2# 运行状态与策略摘要</h2><span class="tag green">前端模拟</span></div>
+      <div class="readout">
+        <div><small>压差阈值</small><strong id="sumDp">0.080 <span class="unit">MPa</span></strong></div>
+        <div><small>运行周期</small><strong id="sumHours">24 <span class="unit">h</span></strong></div>
+        <div><small>反洗时长</small><strong id="sumWash">8 <span class="unit">min</span></strong></div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="panel-head"><h2 style="font-size:12px">自动控制逻辑</h2><span class="sub">条件示意</span></div>
+        <div class="step"><div class="num">A</div><div><div class="step-name">持续监测触发条件</div><div class="step-desc" id="logicTrigger">进出口压差 ≥ 0.080 MPa</div></div></div>
+        <div class="step" style="margin-top:8px"><div class="num">B</div><div><div class="step-name">校验联锁与设备可用状态</div><div class="step-desc">阀位反馈、压力、液位、泵状态及模式授权（现场实现）</div></div></div>
+        <div class="step" style="margin-top:8px"><div class="num">C</div><div><div class="step-name">按顺序执行反洗程序</div><div class="step-desc" id="logicDuration">反洗 8 min → 静置 3 min → 正洗 5 min</div></div></div>
+      </div>
+      
+    </div>
+  </section>
+
+  <section class="bottom-grid">
+    <div class="panel"><div class="panel-head"><h2>设备状态与参数</h2><span class="sub">演示读数</span></div>
+      <table class="table"><thead><tr><th>测点 / 设备</th><th>当前值 / 状态</th><th>状态</th></tr></thead><tbody>
+      <tr><td>1# 过滤器进水压力</td><td>0.18 MPa</td><td><span class="pill">正常（模拟）</span></td></tr>
+      <tr><td>1# 过滤器出水压力</td><td>0.145 MPa</td><td><span class="pill">正常（模拟）</span></td></tr>
+      <tr><td>2# 过滤器压差</td><td id="tableDp">0.035 MPa（模拟）</td><td><span class="pill">正常（模拟）</span></td></tr>
+      <tr><td>反洗泵</td><td>待机</td><td><span class="pill">模拟状态</span></td></tr>
+      <tr><td>阀门反馈</td><td>未接入现场信号</td><td><span class="tag amber">演示</span></td></tr>
+      </tbody></table>
+    </div>
+    <div class="panel"><div class="panel-head"><h2>操作与参数变更记录</h2><span class="sub">本次页面会话</span></div><div class="log" id="logs"><div class="log-item"><span class="log-time">11:33:40</span><i class="log-dot"></i><span>1# 网页演示流程已停止</span></div><div class="log-item"><span class="log-time">11:33:28</span><i class="log-dot"></i><span>1# 手动反冲洗演示流程已启动</span></div>
+      <div class="log-item"><span class="log-time">系统启动</span><i class="log-dot"></i><span>已加载演示参数；未连接现场控制系统。</span></div>
+      <div class="log-item"><span class="log-time">初始配置</span><i class="log-dot"></i><span>2# 过滤器参数处于待确认状态。</span></div>
+    </div></div>
+  </section>
+</main>
+
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal"><h3 id="modalTitle">停止网页演示流程</h3><p id="modalText">这只会停止页面中的步骤状态，不是现场急停，也不会向 PLC 发送任何指令。</p><div class="modal-actions"><button class="btn" id="cancelModal">取消</button><button class="btn primary" id="confirmModal">确认操作</button></div></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+function addLog(message){const item=document.createElement('div');item.className='log-item';const time=document.createElement('span');time.className='log-time';time.textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false});const dot=document.createElement('i');dot.className='log-dot';const msg=document.createElement('span');msg.textContent=message;item.append(time,dot,msg);$('#logs').prepend(item)}
+function tick(){ $('#clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false}); }tick();setInterval(tick,1000);
+let manualStep=-1,manualRunning=false,pendingAction=null;
+function drawSteps(){document.querySelectorAll('#manualSteps .step').forEach((el,i)=>{el.classList.toggle('active',manualRunning&&i===manualStep);el.classList.toggle('done',manualRunning&&i<manualStep||!manualRunning&&manualStep===5);el.querySelector('.step-state').textContent=manualRunning?(i<manualStep?'已完成':i===manualStep?'执行中':'待执行'):(manualStep===5?'已完成':'待执行');});$('#f1Summary').textContent='当前阶段：'+(manualRunning?['隔离进水','反洗水冲洗','气水联合擦洗','静置沉降','正洗恢复'][manualStep]:'待机');$('#manualTag').textContent=manualRunning?'流程执行中':manualStep===5?'已完成':'待机';$('#startManual').disabled=manualRunning||manualStep===5;$('#nextStep').disabled=!manualRunning;$('#stopManual').disabled=!manualRunning;$('#v1in').textContent=manualRunning&&manualStep<4?'关':'开';$('#v1wash').textContent=manualRunning&&(manualStep===1||manualStep===2)?'开':'关';}
+function showModal(title,text,action){pendingAction=action;$('#modalTitle').textContent=title;$('#modalText').textContent=text;$('#modal').classList.add('show')}
+$('#cancelModal').onclick=()=>{$('#modal').classList.remove('show');pendingAction=null};
+$('#confirmModal').onclick=()=>{const fn=pendingAction;pendingAction=null;$('#modal').classList.remove('show');if(fn)fn()};
+$('#startManual').onclick=()=>showModal('确认启动 1# 手动反冲洗流程','请确认现场已按操作规程完成设备可用性检查、工艺隔离和相关联锁确认。此按钮仅启动网页内的模拟流程，不会控制真实设备。',()=>{manualRunning=true;manualStep=0;drawSteps();addLog('1# 手动反冲洗演示流程已启动');});
+$('#nextStep').onclick=()=>showModal('确认阶段切换','请按现场 SOP 确认当前阶段已完成、必要阀位与压力条件满足后再继续。网页不会读取现场反馈。',()=>{if(manualStep<4){manualStep++;drawSteps();addLog('1# 手动流程切换至：'+['隔离进水','反洗水冲洗','气水联合擦洗','静置沉降','正洗恢复'][manualStep]);}else{manualRunning=false;manualStep=5;drawSteps();addLog('1# 手动反冲洗演示流程完成');}});
+$('#stopManual').onclick=()=>showModal('停止网页演示流程','这只会停止页面中的步骤状态，不是现场急停，也不会向 PLC 发送任何指令。',()=>{manualRunning=false;manualStep=-1;drawSteps();addLog('1# 网页演示流程已停止');});
+$('#resetManual').onclick=()=>{manualRunning=false;manualStep=-1;drawSteps();addLog('1# 手动流程界面已复位');};
+function readParams(){return {mode:$('#mode').value,trigger:$('#trigger').value,dp:Number($('#dp').value),hours:Number($('#runHours').value),wash:Number($('#washTime').value),settle:Number($('#settleTime').value),rinse:Number($('#rinseTime').value),flow:Number($('#flowLimit').value)}}
+function validate(){const p=readParams(),errors=[];if(!Number.isFinite(p.dp)||p.dp<.01||p.dp>.15)errors.push('压差阈值应在 0.01–0.15 MPa 示例范围内');if(!Number.isInteger(p.hours)||p.hours<1||p.hours>168)errors.push('运行周期应为 1–168 小时的整数');if(!Number.isInteger(p.wash)||p.wash<1||p.wash>60)errors.push('反洗时长应为 1–60 分钟的整数');if(!Number.isInteger(p.settle)||p.settle<0||p.settle>30)errors.push('静置时间应为 0–30 分钟的整数');if(!Number.isInteger(p.rinse)||p.rinse<1||p.rinse>60)errors.push('正洗时间应为 1–60 分钟的整数');if(!Number.isFinite(p.flow)||p.flow<1||p.flow>1000)errors.push('反洗流量应在 1–1000 m³/h 示例范围内');return {p,errors}}
+function renderParams(){const {p}=validate();$('#f2ModeSummary').textContent=p.mode==='auto'?'自动控制':'手动 / 维护';$('#v2mode').textContent=p.mode==='auto'?'自动':'维护';$('#f2Summary').textContent=p.mode==='auto'?'自动策略已配置（演示）':'自动策略暂停（演示）';$('#sumDp').innerHTML=p.dp.toFixed(3)+' <span class="unit">MPa</span>';$('#sumHours').innerHTML=p.hours+' <span class="unit">h</span>';$('#sumWash').innerHTML=p.wash+' <span class="unit">min</span>';const t=p.trigger==='dp'?'进出口压差 ≥ '+p.dp.toFixed(3)+' MPa':p.trigger==='time'?'运行时间 ≥ '+p.hours+' 小时':'压差 ≥ '+p.dp.toFixed(3)+' MPa 或运行时间 ≥ '+p.hours+' 小时';$('#logicTrigger').textContent=t;$('#logicDuration').textContent='反洗 '+p.wash+' min → 静置 '+p.settle+' min → 正洗 '+p.rinse+' min';$('#tableDp').textContent='0.035 MPa（模拟）'}
+$('#validate').onclick=()=>{const {errors}=validate(),box=$('#paramMessage');box.style.display='block';if(errors.length){box.textContent='参数校验未通过：'+errors.join('；');box.style.borderColor='#70434a';box.style.background='#2b1b23';box.style.color='#ffb6ba';addLog('2# 参数校验失败：'+errors.join('；'));}else{box.textContent='参数格式校验通过。请注意：通过网页校验不代表参数符合设备设计或工艺安全要求。';box.style.borderColor='#285b4e';box.style.background='#102a27';box.style.color='#a4ecd4';addLog('2# 参数格式校验通过（尚未应用到现场控制器）');}};
+$('#saveParams').onclick=()=>{const {p,errors}=validate();if(errors.length){$('#validate').click();return}if(!$('#confirmParams').checked){const box=$('#paramMessage');box.style.display='block';box.textContent='请先勾选“我已核对参数与现场工艺要求”。此确认仅用于演示界面。';box.style.borderColor='#704e2a';box.style.background='#2b2418';box.style.color='#efd39a';return}showModal('保存 2# 演示参数','即将仅保存到当前页面的临时状态，不会写入 PLC、DCS 或持久化数据库。请确认这些参数已经过现场工艺人员核对。',()=>{renderParams();$('#paramMessage').style.display='block';$('#paramMessage').textContent='已更新本页面的演示配置；没有向任何现场控制器发送命令。';$('#paramMessage').style.borderColor='#285b4e';$('#paramMessage').style.background='#102a27';$('#paramMessage').style.color='#a4ecd4';$('#autoTag').textContent='已更新演示配置';addLog('2# 参数已更新到页面演示配置（非现场写入）');});};
+['mode','trigger','dp','runHours','washTime','settleTime','rinseTime','flowLimit'].forEach(id=>$('#'+id).addEventListener('change',()=>{renderParams();$('#autoTag').textContent='参数有变更';}));
+drawSteps();renderParams();
+</script>
+</body></html>

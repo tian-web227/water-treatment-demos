@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>曝气沉砂池 · 3D运行仿真</title>
+<style>
+:root{--bg:#07111f;--panel:#0d1b2b;--line:#20354b;--text:#e7f1fc;--muted:#8ea5bd;--cyan:#48d9f4;--green:#51e0b0;--amber:#ffc66d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0%,#102941 0,#07111f 58%);color:var(--text);font-family:Inter,"Microsoft YaHei",system-ui,sans-serif}
+header{height:76px;padding:16px 26px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #203249;background:#091522dd}
+.brand{display:flex;gap:13px;align-items:center}.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#20bde0,#2470bc);display:grid;place-items:center;font-size:23px;box-shadow:0 0 25px #21b9df30}
+h1{font-size:19px;margin:0;letter-spacing:.5px} .sub{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:1.6px}
+.status{display:flex;align-items:center;gap:8px;font-size:12px;color:#9cebd1;border:1px solid #245747;border-radius:20px;padding:8px 12px;background:#0d2a2a}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+main{max-width:1600px;margin:auto;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
+.left{min-width:0}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.metric,.panel{background:linear-gradient(145deg,#102136,#0b1827);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px #0002}
+.metric{padding:15px 17px;position:relative;overflow:hidden}.metric:after{content:"";position:absolute;right:-18px;top:-25px;width:80px;height:80px;border-radius:50%;background:#2fc7ee0c}
+.m-label{font-size:12px;color:var(--muted)}.m-value{font-size:25px;font-weight:700;margin:9px 0 5px;letter-spacing:.3px}.unit{font-size:11px;color:var(--muted);font-weight:400}.trend{font-size:11px;color:var(--green)}
+.viewer{position:relative;height:550px;min-height:400px;background:radial-gradient(ellipse at 50% 50%,#173750,#091522 72%);border:1px solid #25435c;border-radius:16px;overflow:hidden}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.viewer-top{position:absolute;z-index:2;left:18px;top:17px;pointer-events:none}.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:2px;text-transform:uppercase}.viewer-title{font-size:17px;font-weight:650;margin-top:5px}.viewer-note{font-size:11px;color:#91a9bf;margin-top:6px}
+.legend{position:absolute;left:18px;bottom:17px;display:flex;gap:12px;flex-wrap:wrap;background:#071421c9;border:1px solid #284158;border-radius:10px;padding:10px 12px;font-size:11px;color:#c5d5e5;z-index:2}.legend span{display:flex;align-items:center;gap:6px}.swatch{width:8px;height:8px;border-radius:50%;display:inline-block}.view-tools{position:absolute;right:15px;top:15px;display:flex;gap:7px;z-index:3}.tool{border:1px solid #2b455b;background:#0a1928dd;color:#d6e5f3;padding:8px 10px;border-radius:8px;font-size:11px;cursor:pointer}.tool:hover,.tool.active{border-color:var(--cyan);color:var(--cyan)}
+.viewer-hint{position:absolute;right:17px;bottom:18px;font-size:10px;color:#8199b0;z-index:2}
+.controls{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;margin-top:14px}.control{padding:16px}.panel-title{font-size:13px;font-weight:650;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.small{font-size:10px;color:var(--muted);font-weight:400}
+.buttons{display:flex;gap:8px;flex-wrap:wrap}.btn{cursor:pointer;border:1px solid #29445b;background:#14283c;color:#dceaf7;border-radius:8px;padding:9px 12px;font-size:12px}.btn.primary{background:linear-gradient(135deg,#0c9fca,#2876c6);border-color:transparent;color:white}.btn:hover{filter:brightness(1.15)}
+.range-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin:13px 0 8px}input[type=range]{width:100%;accent-color:var(--cyan)}
+.side{display:flex;flex-direction:column;gap:14px}.side .panel{padding:17px}.steps{display:flex;flex-direction:column;gap:0}.step{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid #1c3044;cursor:pointer}.step:last-child{border:0}.step-no{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:#142b40;color:#8ca7be;font-size:11px;border:1px solid #29445b}.step.active .step-no{background:#0d5065;border-color:#31c8e9;color:#d9faff}.step-name{font-size:12px;font-weight:600;margin:2px 0 5px}.step-desc{font-size:10px;color:var(--muted);line-height:1.6}.step.active .step-name{color:var(--cyan)}
+.bar-row{margin:14px 0}.bar-label{display:flex;justify-content:space-between;font-size:11px;color:#c4d5e5;margin-bottom:7px}.bar{height:5px;background:#1a3045;border-radius:9px;overflow:hidden}.bar i{height:100%;display:block;border-radius:9px;background:linear-gradient(90deg,#1689be,#4ce0f0)}
+.note{font-size:10px;line-height:1.7;color:#829bb1;background:#0a1724;border:1px solid #1d3042;border-radius:9px;padding:11px;margin-top:12px}
+footer{max-width:1600px;margin:0 auto;padding:0 20px 22px;color:#647e95;font-size:10px;display:flex;justify-content:space-between;gap:10px}
+@media(max-width:1050px){main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.viewer{height:480px}}
+@media(max-width:650px){header{padding:13px 15px}.status{display:none}main{padding:12px}.metrics{grid-template-columns:repeat(2,1fr);gap:8px}.metric{padding:12px}.m-value{font-size:21px}.viewer{height:410px}.controls,.side{grid-template-columns:1fr}.viewer-hint{display:none}footer{padding:0 12px 18px;flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">≈</div><div><h1>曝气沉砂池 · 运行仿真</h1><div class="sub">AERATED GRIT CHAMBER / 3D PROCESS MONITOR</div></div></div>
+  
+</header>
+<main>
+<section class="left">
+  <div class="metrics">
+    <div class="metric"><div class="m-label">进水流量</div><div class="m-value" id="flowVal">1,200 <span class="unit">m³/h</span></div><div class="trend">↗ 工艺输入参数</div></div>
+    <div class="metric"><div class="m-label">曝气强度</div><div class="m-value" id="airVal">65 <span class="unit">%</span></div><div class="trend">● 曝气系统已启用</div></div>
+    <div class="metric"><div class="m-label">池内流速（示意）</div><div class="m-value" id="velVal">0.25 <span class="unit">m/s</span></div><div class="trend">≈ 水平流动状态</div></div>
+    <div class="metric"><div class="m-label">砂粒去除率</div><div class="m-value" id="removeVal">92 <span class="unit">%</span></div><div class="trend" style="color:var(--amber)">◆ 演示估算值</div></div>
+  </div>
+  <div class="viewer">
+    <canvas id="scene" data-engine="three.js r180" width="855" height="548" style="touch-action: none;"></canvas>
+    <div class="viewer-top"><div class="eyebrow">LIVE PROCESS VISUALIZATION</div><div class="viewer-title">曝气沉砂池 · 三维剖视</div><div class="viewer-note" id="stageCaption">阶段 02 / 曝气旋流：气泡上升，水体形成循环</div></div>
+    <div class="view-tools"><button class="tool active" id="allBtn">整体视图</button><button class="tool" id="sandBtn">砂粒聚焦</button><button class="tool" id="airBtn">曝气聚焦</button></div>
+    <div class="legend"><span><i class="swatch" style="background:#43d5f3"></i>污水流向</span><span><i class="swatch" style="background:#e9f8ff"></i>空气气泡</span><span><i class="swatch" style="background:#ffc15c"></i>砂粒</span><span><i class="swatch" style="background:#58dfb5"></i>出水</span></div>
+    <div class="viewer-hint">拖动旋转 · 滚轮缩放 · 右键平移</div>
+  </div>
+  <div class="controls">
+    <div class="panel control"><div class="panel-title">动画控制 <span class="small" id="playState">PLAYING</span></div><div class="buttons"><button class="btn primary" id="playBtn">Ⅱ 暂停</button><button class="btn" id="resetBtn">↺ 重置</button><button class="btn" id="drainBtn">启动排砂</button></div></div>
+    <div class="panel control"><div class="panel-title">进水流量 <span class="small">模拟调节</span></div><div class="range-row"><span>600 m³/h</span><strong id="flowRangeLabel">1200 m³/h</strong><span>1800 m³/h</span></div><input id="flowRange" type="range" min="600" max="1800" step="50" value="1200"></div>
+    <div class="panel control"><div class="panel-title">曝气强度 <span class="small">模拟调节</span></div><div class="range-row"><span>低</span><strong id="airRangeLabel">65%</strong><span>高</span></div><input id="airRange" type="range" min="10" max="100" step="5" value="65"></div>
+  </div>
+</section>
+<aside class="side">
+  <div class="panel"><div class="panel-title">工艺流程 <span class="small">点击切换阶段</span></div><div class="steps" id="steps">
+    <div class="step" data-stage="0"><div class="step-no">01</div><div><div class="step-name">污水进水</div><div class="step-desc">污水由进水端进入池体，沿水平方向推进。</div></div></div>
+    <div class="step active" data-stage="1"><div class="step-no">02</div><div><div class="step-name">曝气旋流</div><div class="step-desc">底部曝气形成循环流态，气泡向水面上升。</div></div></div>
+    <div class="step" data-stage="2"><div class="step-no">03</div><div><div class="step-name">砂粒沉降</div><div class="step-desc">较重颗粒逐渐沉降，汇集于池底集砂区域。</div></div></div>
+    <div class="step" data-stage="3"><div class="step-no">04</div><div><div class="step-name">集砂排砂</div><div class="step-desc">排砂机构启动，将底部砂粒输送至排砂端。</div></div></div>
+    <div class="step" data-stage="4"><div class="step-no">05</div><div><div class="step-name">处理后出水</div><div class="step-desc">水流从出水端离开，完成工艺流程展示。</div></div></div>
+  </div></div>
+  <div class="panel"><div class="panel-title">运行状态 <span class="small">实时动画参数</span></div>
+    <div class="bar-row"><div class="bar-label"><span>曝气系统</span><strong id="airState">65%</strong></div><div class="bar"><i id="airBar" style="width:65%"></i></div></div>
+    <div class="bar-row"><div class="bar-label"><span>水流推进速度</span><strong id="flowState">67%</strong></div><div class="bar"><i id="flowBar" style="width:67%"></i></div></div>
+    <div class="bar-row"><div class="bar-label"><span>底部砂粒累积（示意）</span><strong id="sandState">42%</strong></div><div class="bar"><i id="sandBar" style="width:42%;background:linear-gradient(90deg,#b77b2a,#ffd17c)"></i></div></div>
+    
+  </div>
+</aside>
+</main>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const canvas=document.querySelector('#scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(canvas.clientWidth,canvas.clientHeight,false);
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0x091522,18,38);
+const camera=new THREE.PerspectiveCamera(42,canvas.clientWidth/canvas.clientHeight,.1,100);
+camera.position.set(10,8,12);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1.1,0);controls.enableDamping=true;controls.dampingFactor=.06;controls.minDistance=6;controls.maxDistance=24;controls.maxPolarAngle=Math.PI*.49;
+scene.add(new THREE.HemisphereLight(0xa9e4ff,0x142333,2.0));
+const key=new THREE.DirectionalLight(0xb9e8ff,3.2);key.position.set(5,10,7);scene.add(key);
+const rim=new THREE.PointLight(0x21bde8,18,24);rim.position.set(-5,5,-3);scene.add(rim);
+const floorMat=new THREE.MeshStandardMaterial({color:0x142b3d,metalness:.35,roughness:.55});
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(30,22),floorMat);floor.rotation.x=-Math.PI/2;floor.position.y=-.15;scene.add(floor);
+const grid=new THREE.GridHelper(24,24,0x24506b,0x19334a);grid.position.y=-.13;scene.add(grid);
+const tank=new THREE.Group();scene.add(tank);
+const L=9,W=3.2,H=2.8;
+const wallMat=new THREE.MeshStandardMaterial({color:0x4c7187,metalness:.65,roughness:.32,transparent:true,opacity:.35,side:THREE.DoubleSide});
+const edgeMat=new THREE.MeshStandardMaterial({color:0x6c9eb8,metalness:.7,roughness:.25});
+function box(parent,w,h,d,x,y,z,mat){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);parent.add(m);return m}
+box(tank,L,.12,W,0,0,0,edgeMat);
+box(tank,L,.12,.12,0,H,-W/2,wallMat);box(tank,L,.12,.12,0,H,W/2,wallMat);
+box(tank,.12,H,W,-L/2,H/2,0,wallMat);box(tank,.12,H,W,L/2,H/2,0,wallMat);
+// low side walls allow cutaway view
+box(tank,L,.42,.10,0,.21,W/2,edgeMat);box(tank,.10,.42,W,-L/2,.21,0,edgeMat);box(tank,.10,.42,W,L/2,.21,0,edgeMat);
+const waterMat=new THREE.MeshPhysicalMaterial({color:0x087ea6,transparent:true,opacity:.23,roughness:.22,metalness:.1,transmission:.1,side:THREE.DoubleSide});
+const water=box(tank,L-.25,1.85,W-.25,0,1.55,0,waterMat);
+const waterLineMat=new THREE.MeshBasicMaterial({color:0x37c9ee,transparent:true,opacity:.45});
+const waterLine=new THREE.Mesh(new THREE.BoxGeometry(L-.2,.018,W-.2),waterLineMat);waterLine.position.y=2.48;tank.add(waterLine);
+// inlet/outlet pipes
+const pipeMat=new THREE.MeshStandardMaterial({color:0x4e8ca8,metalness:.65,roughness:.3});
+function cylinderBetween(parent,a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),dir=new THREE.Vector3().subVectors(B,A);const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,dir.length(),16),mat);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());parent.add(m);return m}
+cylinderBetween(tank,[-5.4,1.5,0],[-4.5,1.5,0],.28,pipeMat);cylinderBetween(tank,[4.5,1.7,0],[5.35,1.7,0],.25,pipeMat);
+// aeration manifold and risers
+const airGroup=new THREE.Group();tank.add(airGroup);
+cylinderBetween(airGroup,[-3.7,.48,.9],[3.7,.48,.9],.065,edgeMat);
+for(let x=-3.4;x<=3.5;x+=.55){cylinderBetween(airGroup,[x,.48,.9],[x,.64,.9],.035,edgeMat);const nozzle=new THREE.Mesh(new THREE.SphereGeometry(.075,10,8),new THREE.MeshStandardMaterial({color:0x7beaff,emissive:0x1688b5,emissiveIntensity:1.4}));nozzle.position.set(x,.66,.9);airGroup.add(nozzle)}
+// flow particles
+function particleCloud(count,color,size,area){const geo=new THREE.BufferGeometry();const arr=new Float32Array(count*3);for(let i=0;i<count;i++){arr[i*3]=(Math.random()-.5)*area.x;arr[i*3+1]=.45+Math.random()*1.8;arr[i*3+2]=(Math.random()-.5)*area.z}geo.setAttribute('position',new THREE.BufferAttribute(arr,3));const mat=new THREE.PointsMaterial({color,size,transparent:true,opacity:.9,sizeAttenuation:true,depthWrite:false});const pts=new THREE.Points(geo,mat);tank.add(pts);return {pts,arr,count,color}}
+const flow=particleCloud(600,0x39d6f4,.045,{x:8.6,z:2.6});
+const bubbles=particleCloud(240,0xdffaff,.065,{x:7.2,z:2.3});
+const sand=particleCloud(260,0xffc15c,.07,{x:8.2,z:2.5});
+const sandMat=new THREE.PointsMaterial({color:0xffc15c,size:.075,transparent:true,opacity:.98,depthWrite:false});
+// extra sand collection pile
+const pile=new THREE.Group();tank.add(pile);
+for(let i=0;i<100;i++){const r=.045+Math.random()*.045;const s=new THREE.Mesh(new THREE.IcosahedronGeometry(r,0),new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(.095+Math.random()*.025,.75,.52),roughness:.9}));s.position.set(3.2+Math.random()*.9,.1+Math.random()*.35,(Math.random()-.5)*1.7);pile.add(s)}
+// direction arrows along the water path
+const arrows=new THREE.Group();tank.add(arrows);
+for(let x=-3.7;x<3.7;x+=1.25){const a=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(x,2.55,-.75),.65,0x55dbf4,.18,.12);arrows.add(a)}
+const drainGroup=new THREE.Group();tank.add(drainGroup);
+cylinderBetween(drainGroup,[3.65,.25,.9],[4.45,.25,.9],.09,0xffc15c?new THREE.MeshStandardMaterial({color:0xffc15c,metalness:.3}):edgeMat);
+let playing=true,draining=false,stage=1,flowRate=1200,airRate=65,elapsed=0,focus='all';
+function setStage(n){stage=n;document.querySelectorAll('.step').forEach(el=>el.classList.toggle('active',+el.dataset.stage===n));const captions=['阶段 01 / 污水进水：水流由左向右进入池体','阶段 02 / 曝气旋流：气泡上升，水体形成循环','阶段 03 / 砂粒沉降：颗粒逐渐向池底聚集','阶段 04 / 集砂排砂：底部颗粒向排砂端移动','阶段 05 / 处理后出水：水流由出水端离开'];document.querySelector('#stageCaption').textContent=captions[n];}
+document.querySelectorAll('.step').forEach(el=>el.addEventListener('click',()=>setStage(+el.dataset.stage)));
+document.querySelector('#playBtn').onclick=()=>{playing=!playing;document.querySelector('#playBtn').textContent=playing?'Ⅱ 暂停':'▶ 继续';document.querySelector('#playState').textContent=playing?'PLAYING':'PAUSED';document.querySelector('#statusText').textContent=playing?'系统运行中':'动画已暂停'};
+document.querySelector('#resetBtn').onclick=()=>{elapsed=0;draining=false;playing=true;flowRate=1200;airRate=65;document.querySelector('#flowRange').value=1200;document.querySelector('#airRange').value=65;document.querySelector('#drainBtn').textContent='启动排砂';document.querySelector('#playBtn').textContent='Ⅱ 暂停';document.querySelector('#playState').textContent='PLAYING';updateMetrics();setStage(1);};
+document.querySelector('#drainBtn').onclick=()=>{draining=!draining;document.querySelector('#drainBtn').textContent=draining?'停止排砂':'启动排砂';setStage(draining?3:2)};
+document.querySelector('#flowRange').oninput=e=>{flowRate=+e.target.value;updateMetrics()};
+document.querySelector('#airRange').oninput=e=>{airRate=+e.target.value;updateMetrics()};
+function updateMetrics(){document.querySelector('#flowVal').innerHTML=flowRate.toLocaleString()+' <span class="unit">m³/h</span>';document.querySelector('#airVal').innerHTML=airRate+' <span class="unit">%</span>';document.querySelector('#velVal').innerHTML=(.12+flowRate/1800*.20).toFixed(2)+' <span class="unit">m/s</span>';document.querySelector('#flowRangeLabel').textContent=flowRate+' m³/h';document.querySelector('#airRangeLabel').textContent=airRate+'%';document.querySelector('#airState').textContent=airRate+'%';document.querySelector('#airBar').style.width=airRate+'%';let f=Math.round(flowRate/1800*100);document.querySelector('#flowState').textContent=f+'%';document.querySelector('#flowBar').style.width=f+'%';document.querySelector('#sandState').textContent=draining?'18%':'42%';document.querySelector('#sandBar').style.width=(draining?18:42)+'%';}
+function setFocus(mode){focus=mode;document.querySelectorAll('.tool').forEach(b=>b.classList.remove('active'));document.querySelector(mode==='all'?'#allBtn':mode==='sand'?'#sandBtn':'#airBtn').classList.add('active');if(mode==='sand'){controls.target.set(3,.5,0);camera.position.set(7,4,6)}else if(mode==='air'){controls.target.set(0,1.1,.8);camera.position.set(1,5,7)}else{controls.target.set(0,1.1,0);camera.position.set(10,8,12)}}
+document.querySelector('#allBtn').onclick=()=>setFocus('all');document.querySelector('#sandBtn').onclick=()=>setFocus('sand');document.querySelector('#airBtn').onclick=()=>setFocus('air');
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(canvas);
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);if(playing)elapsed+=dt;const speed=(.25+flowRate/1800*.8)*(playing?1:0);
+const fp=flow.pts.geometry.attributes.position;for(let i=0;i<flow.count;i++){let x=flow.arr[i*3],y=flow.arr[i*3+1],z=flow.arr[i*3+2];x+=dt*speed*1.8;if(x>4.25)x=-4.25;flow.arr[i*3]=x;flow.arr[i*3+1]=y+Math.sin(elapsed*1.8+i)*.0015;flow.arr[i*3+2]=z+Math.sin(elapsed+i*.4)*.001;}fp.needsUpdate=true;
+const bp=bubbles.pts.geometry.attributes.position;for(let i=0;i<bubbles.count;i++){let x=bubbles.arr[i*3],y=bubbles.arr[i*3+1],z=bubbles.arr[i*3+2];y+=dt*(.25+airRate/100*.95)*(playing?1:0);if(y>2.65){y=.48+Math.random()*.12;x=(Math.random()-.5)*7.2;z=(Math.random()-.5)*2.3}bubbles.arr[i*3]=x+Math.sin(elapsed*2+i)*.001;bubbles.arr[i*3+1]=y;bubbles.arr[i*3+2]=z+Math.sin(elapsed*1.4+i)*.003;}bp.needsUpdate=true;
+const sp=sand.pts.geometry.attributes.position;for(let i=0;i<sand.count;i++){let x=sand.arr[i*3],y=sand.arr[i*3+1],z=sand.arr[i*3+2];if(playing){y-=dt*(draining?.03:.055);x+=dt*(draining?.55:.09);if(y<.12){y=draining?.2:.12;if(!draining)x=Math.min(4.1,x+.01);else if(x>4.1){x=-4+Math.random()*1.2;y=.6+Math.random()*.8}}if(x>4.2){x=-4.2;y=1.5+Math.random()*.8}}sand.arr[i*3]=x;sand.arr[i*3+1]=y;sand.arr[i*3+2]=z;}sp.needsUpdate=true;
+bubbles.pts.visible=focus!=='sand';sand.pts.visible=focus!=='air';airGroup.visible=focus!=='sand';pile.visible=focus!=='air';if(draining){drainGroup.visible=true;pile.rotation.y=Math.sin(elapsed*2)*.03}else drainGroup.visible=false;
+water.material.opacity=.17+airRate/100*.12;arrows.visible=stage===0||stage===1||stage===4;
+controls.update();renderer.render(scene,camera)}
+updateMetrics();animate();
+</script>
+
+
+
+
+</body></html>
